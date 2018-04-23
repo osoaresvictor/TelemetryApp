@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Telemetry.App": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\Victor Soares\\Desktop\\teste.txt\""
+      "commandName": "Project"
     }
   }
 }
