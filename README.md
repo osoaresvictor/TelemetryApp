@@ -13,7 +13,7 @@ O arquivo de inicialização possui a seguinte sintaxe deve contar os campos **I
 
 **Exemplo: listaDePedidos.exe**
 
-`192.168.0.1 1000 0 50`
+`192.168.0.1 1000 0 50`  
 `127.0.0.3 2200 37 400`
 
 De maneira geral:  **<Telemetry.App.exe> listaDePedidos.txt**
