@@ -1,0 +1,12 @@
+
+\.vs/
+
+Telemetry\.App/obj/
+
+Telemetry\.App/bin/
+
+Telemetry\.App\.Test/obj/
+
+Telemetry\.Domain/bin/
+
+Telemetry\.Domain/obj/
