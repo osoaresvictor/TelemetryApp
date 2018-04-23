@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Telemetry.Domain;
 
-namespace Telemetry.App.Application.Interfaces
+namespace Telemetry.App.Utils.Interfaces
 {
 	public interface ILogWritter
 	{

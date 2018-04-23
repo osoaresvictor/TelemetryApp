@@ -2,13 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Telemetry.App.Application.Interfaces;
+using Telemetry.App.Utils.Interfaces;
 using Telemetry.Domain;
 
-namespace Telemetry.App.Aplication
+namespace Telemetry.App.Utils
 {
 	public class LogWritter : ILogWritter
 	{
+		public IFloatRounder FloatRounder { get; set; }
+
+		public LogWritter(IFloatRounder FloatRounder)
+		{
+			this.FloatRounder = FloatRounder;
+		}
+
 		public string SaveCSVFile(string serialNumber, IEnumerable<RecordContent> recordsContent)
 		{
 			if (String.IsNullOrEmpty(serialNumber) || (recordsContent == null || recordsContent.Count() == 0))
@@ -32,9 +39,9 @@ namespace Telemetry.App.Aplication
 				try
 				{
 					var formattedDateTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", record.DateTime.GetDateTime());
-					var Status = Math.Round(record.Energy.GetEnergyValue(), 2, MidpointRounding.ToEven);
+					var energyValue = this.FloatRounder.RoundWithHalfToPair(record.Energy.GetEnergyValue());
 
-					lines.Add($"{record.Index};{formattedDateTime};{Status}");
+					lines.Add($"{record.Index};{formattedDateTime};{energyValue}");
 				}
 				catch
 				{

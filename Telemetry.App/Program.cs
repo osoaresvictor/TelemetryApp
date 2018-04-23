@@ -5,6 +5,7 @@ using System.Linq;
 using Telemetry.App.Application.Interfaces;
 using Telemetry.App.IoC;
 using Telemetry.App.Model;
+using Telemetry.App.Utils.Interfaces;
 using Telemetry.Domain;
 using Telemetry.Domain.Frame;
 
@@ -59,7 +60,7 @@ namespace TelemetryApp
 				}
 			}
 
-			Console.WriteLine($"{System.DateTime.Now} - Execução Finalizada! Pressione qualquer tecla para sair...");
+			Console.WriteLine($"\n{System.DateTime.Now} - Execução Finalizada! Pressione qualquer tecla para sair...");
 			Console.ReadKey();
 		}
 	}
