@@ -10,18 +10,26 @@ namespace Telemetry.App.Test.App
 	[TestClass]
 	public class LogWritterTest
 	{
+		public static LogWritter LogWritter { get; set; }
+
+		[ClassInitialize]
+		public static void Initialize(TestContext testContext)
+		{
+			LogWritter = new LogWritter(new FloatRounder());
+		}
+
 		[TestMethod]
 		[ExpectedException(typeof(Exception))]
 		public void SaveFileWithNoSerialNumber()
 		{
-			new LogWritter(new FloatRounder()).SaveCSVFile("", new List<RecordContent>() { new RecordContent { } });
+			LogWritter.SaveCSVFile("", new List<RecordContent>() { new RecordContent { } });
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(Exception))]
 		public void SaveFileWithInvalidRecordContentList()
 		{
-			new LogWritter(new FloatRounder()).SaveCSVFile("ASUHDIFU023341", new List<RecordContent>());
+			LogWritter.SaveCSVFile("ASUHDIFU023341", new List<RecordContent>());
 		}
 
 		[TestMethod]
@@ -31,7 +39,7 @@ namespace Telemetry.App.Test.App
 																					.Replace(' ', '_')
 																					.Replace('/', '-');
 
-			var pathGeneratedFile = new LogWritter(new FloatRounder()).SaveCSVFile("ASUHDIFU023341", new List<RecordContent>() { null, null, null});
+			var pathGeneratedFile = LogWritter.SaveCSVFile("ASUHDIFU023341", new List<RecordContent>() { null, null, null});
 
 			File.Delete(pathGeneratedFile);
 

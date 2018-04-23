@@ -14,6 +14,14 @@ namespace Telemetry.App.Test.App
 	[TestClass]
 	public class RecordHandlerTest
 	{
+		public static RecordHandler RecordHandler { get; set; }
+
+		[ClassInitialize]
+		public static void Initialize(TestContext testContext)
+		{
+			RecordHandler = new RecordHandler();
+		}
+
 		[TestMethod]
 		[ExpectedException(typeof(Exception))]
 		public void GetRecordsIndexToScan_RequestedIndexBeforeOfAvaliableRange()
@@ -22,7 +30,7 @@ namespace Telemetry.App.Test.App
 			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 0, LastIndex = 100 };
 			var avaliableIndex = new ushort[] { 300, 500 };
 
-			var range = new RecordHandler().GetRecordsIndexToScan(startupParameters, avaliableIndex);
+			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, avaliableIndex);
 		}
 
 		[TestMethod]
@@ -33,7 +41,7 @@ namespace Telemetry.App.Test.App
 			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 900, LastIndex = 1000 };
 			var avaliableIndex = new ushort[] { 300, 500 };
 
-			var range = new RecordHandler().GetRecordsIndexToScan(startupParameters, avaliableIndex);
+			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, avaliableIndex);
 		}
 
 		[TestMethod]
@@ -43,7 +51,7 @@ namespace Telemetry.App.Test.App
 			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 400, LastIndex = 1000 };
 			var avaliableIndex = new ushort[] { 300, 500 };
 
-			var range = new RecordHandler().GetRecordsIndexToScan(startupParameters, avaliableIndex);
+			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, avaliableIndex);
 
 			Assert.AreEqual(400, range[0]);
 			Assert.AreEqual(500, range[1]);
@@ -56,7 +64,7 @@ namespace Telemetry.App.Test.App
 			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 420, LastIndex = 470 };
 			var avaliableIndex = new ushort[] { 300, 500 };
 
-			var range = new RecordHandler().GetRecordsIndexToScan(startupParameters, avaliableIndex);
+			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, avaliableIndex);
 
 			Assert.AreEqual(420, range[0]);
 			Assert.AreEqual(470, range[1]);
@@ -95,7 +103,7 @@ namespace Telemetry.App.Test.App
 			connectionHandlerMock.SendRequest<Telemetry.Domain.Frame.DateTime>(Arg.Any<Telemetry.Domain.Frame.DateTime>()).Returns(Task.FromResult(dateTimeMockResponse));
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
 
-			var records = new RecordHandler().GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
+			var records = RecordHandler.GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
 			Assert.AreEqual(2, records.Count());
 		}
 
@@ -122,7 +130,7 @@ namespace Telemetry.App.Test.App
 			connectionHandlerMock.SendRequest<Energy>(Arg.Any<Energy>()).Returns(Task.FromResult(energyMockResponse));
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
 
-			var records = new RecordHandler().GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
+			var records = RecordHandler.GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
 			Assert.AreEqual(2, records.Count());
 		}
 
@@ -140,7 +148,7 @@ namespace Telemetry.App.Test.App
 			var connectionHandlerMock = Substitute.For<IConnectionHandler>();
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
 
-			var records = new RecordHandler().GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
+			var records = RecordHandler.GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });
 			Assert.AreEqual(0, records.Count());
 		}
 	}

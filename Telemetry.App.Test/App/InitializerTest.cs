@@ -10,18 +10,26 @@ namespace Telemetry.App.Test.App
 	[TestClass]
 	public class InitializerTest
 	{
+		public static Initializer Initializer { get; set; }
+
+		[ClassInitialize]
+		public static void Initialize(TestContext testContext)
+		{
+			Initializer = new Initializer();
+		}
+
 		[TestMethod]
 		[ExpectedException(typeof(DirectoryNotFoundException))]
 		public void InitializeAppWithInvalidFilePath()
 		{
-			new Initializer().GetRequests(new string[] { @"Z:/dsfsudh/sdiuh.mp3" });
+			Initializer.GetRequests(new string[] { @"Z:/dsfsudh/sdiuh.mp3" });
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(Exception))]
 		public void InitializeAppWithoutFilePath()
 		{
-			new Initializer().GetRequests(new string[] { });
+			Initializer.GetRequests(new string[] { });
 		}
 
 		[TestMethod]
@@ -30,7 +38,7 @@ namespace Telemetry.App.Test.App
 			var firstLine = "127.0.0.1 10002 0 47200";
 			var secondLine = "192.168.0.3 10000 46000 47288";
 
-			var startupParameters = new Initializer().BuildRequestsList(new string[] { firstLine, secondLine }).ToArray();
+			var startupParameters = Initializer.BuildRequestsList(new string[] { firstLine, secondLine }).ToArray();
 
 			Assert.AreEqual(2, startupParameters.Length);
 
@@ -49,7 +57,7 @@ namespace Telemetry.App.Test.App
 		{
 			var firstLine = "999.0.0.1 10002 0 47200";
 
-			var startupParameters = new Initializer().BuildRequestsList(new string[] { firstLine });
+			var startupParameters = Initializer.BuildRequestsList(new string[] { firstLine });
 		}
 
 		[TestMethod]
@@ -58,8 +66,7 @@ namespace Telemetry.App.Test.App
 		{
 			var firstLine = "192.0.0.1 10002 0 ABB";
 
-			var startupParameters = new Initializer().BuildRequestsList(new string[] { firstLine});
+			var startupParameters = Initializer.BuildRequestsList(new string[] { firstLine});
 		}
-
 	}
 }
