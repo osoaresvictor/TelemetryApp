@@ -23,7 +23,7 @@ namespace Telemetry.App.Repository
 
 				this.TcpClient = new TcpClient(address, port);
 
-				Console.WriteLine($"{System.DateTime.Now.ToString()} - Socket conectado: {address}:{port} ");
+				Console.WriteLine($"\n{System.DateTime.Now.ToString()} - Socket conectado: {address}:{port} ");
 
 				return this;
 			}

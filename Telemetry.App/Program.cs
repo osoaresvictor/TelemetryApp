@@ -37,11 +37,14 @@ namespace TelemetryApp
 				{
 					if (connectionHandler.TcpSocketClient.TcpClient == null) connectionHandler.OpenConnection(requestsList[requestIndex].EndPoint);
 
-					Console.WriteLine($"\nIniciando Requisição {requestIndex + 1} de {requestsList.Length}");
-
 					var serialNumber = String.Join("", connectionHandler.SendRequest<SerialNumber>(new SerialNumber()).Result.GetAsciiCharacters());
+
 					var recordsStatus = connectionHandler.SendRequest<Status>(new Status()).Result.GetValue();
+					Console.WriteLine($"Registros Disponíveis: {recordsStatus[0]} - {recordsStatus[1]}");
+
 					var indexRangeToScan = recordHandler.GetRecordsIndexToScan(requestsList[requestIndex], recordsStatus);
+
+					Console.WriteLine($"\nIniciando Requisição {requestIndex + 1} de {requestsList.Length} | Registros: {indexRangeToScan[0]} - {indexRangeToScan[1]}");
 
 					recordsContent = recordHandler.GetRecordsContent(connectionHandler, indexRangeToScan);
 
