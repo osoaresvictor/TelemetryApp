@@ -27,7 +27,7 @@ namespace Telemetry.App.Test.App
 		[TestMethod]
 		public void SaveFileWithValidInputData()
 		{
-			var defaultLogFilePath = Directory.GetCurrentDirectory() + $"\\WAY2_{ System.DateTime.Now.ToString()}.csv".Replace(':', '-')
+			var defaultLogFilePath = Directory.GetCurrentDirectory() + $"\\LOG_{ System.DateTime.Now.ToString()}.csv".Replace(':', '-')
 																					.Replace(' ', '_')
 																					.Replace('/', '-');
 
