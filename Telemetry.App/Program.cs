@@ -2,66 +2,74 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Telemetry.App.Application.Interfaces;
 using Telemetry.App.IoC;
 using Telemetry.App.Model;
+using Telemetry.App.Repository.Interfaces;
 using Telemetry.App.Utils.Interfaces;
-using Telemetry.Domain;
 using Telemetry.Domain.Frame;
 
 namespace TelemetryApp
 {
 	public class Program
 	{
+		private static IContainer IocContainer;
+		private static StartupParameters[] RequestsList;
+		private static List<ITcpSocketClient> ActiveConnections;
+
 		public static void Main(string[] args)
 		{
-			var iocContainer = new ContainerFactory().Create();
-			var initializer = iocContainer.Resolve<IInitializer>();
-			var recordHandler = iocContainer.Resolve<IRecordHandler>();
-			var logWritter = iocContainer.Resolve<ILogWritter>();
-			var connectionHandler = iocContainer.Resolve<IConnectionHandler>();
+			IocContainer = new ContainerFactory().Create();
+			var initializer = IocContainer.Resolve<IInitializer>();
 
-			var requestsList = default(StartupParameters[]);
-			var recordsContent = default(IEnumerable<RecordContent>);
+			ActiveConnections = new List<ITcpSocketClient>();
+			RequestsList = default(StartupParameters[]);
 
-			try { requestsList = initializer.GetRequests(args).ToArray(); }
+			try
+			{
+				RequestsList = initializer.GetRequests(args).ToArray();
+
+				var requestTasks = new List<Task>();
+				Parallel.ForEach(RequestsList, request => { requestTasks.Add(ProcessRequest(request)); });
+				Task.WaitAll(requestTasks.ToArray());
+			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"{System.DateTime.Now} Erro: {ex.Message} \n {ex.StackTrace} \n\nPressione qualquer tecla para sair...");
-				Console.ReadKey();
-				Environment.Exit(0);
+				Console.WriteLine($"{System.DateTime.Now} - Erro: {ex.Message} \n {ex.StackTrace}");
 			}
-
-			for (var requestIndex = 0; requestIndex < requestsList.Length; requestIndex++)
+			finally
 			{
-				try
-				{
-					if (connectionHandler.TcpSocketClient.TcpClient == null) connectionHandler.OpenConnection(requestsList[requestIndex].EndPoint);
+				ActiveConnections.ForEach(connection => connection.Disconnect());
+				Console.WriteLine($"\n{System.DateTime.Now} - Execução Finalizada! Pressione qualquer tecla para sair...");
+				Console.ReadKey();
+			}
+		}
 
-					var serialNumber = String.Join("", connectionHandler.SendRequest<SerialNumber>(new SerialNumber()).Result.GetAsciiCharacters());
+		private static async Task ProcessRequest(StartupParameters request)
+		{
+			var recordHandler = IocContainer.Resolve<IRecordHandler>();
+			var logWritter = IocContainer.Resolve<ILogWritter>();
+			var connectionHandler = default(IConnectionHandler);
 
-					var recordsStatus = connectionHandler.SendRequest<Status>(new Status()).Result.GetValue();
-					Console.WriteLine($"Registros Disponíveis: {recordsStatus[0]} - {recordsStatus[1]}");
-
-					var indexRangeToScan = recordHandler.GetRecordsIndexToScan(requestsList[requestIndex], recordsStatus);
-
-					Console.WriteLine($"\nIniciando Requisição {requestIndex + 1} de {requestsList.Length} | Registros: {indexRangeToScan[0]} - {indexRangeToScan[1]}");
-
-					recordsContent = recordHandler.GetRecordsContent(connectionHandler, indexRangeToScan);
-
-					connectionHandler.CloseSocketConnection(requestsList, requestIndex);
-
-					logWritter.SaveCSVFile(serialNumber, recordsContent);
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine($"{System.DateTime.Now} - Erro: {ex.Message} \n {ex.StackTrace}");
-					continue;
-				}
+			if (ActiveConnections.FirstOrDefault(connection => connection.TcpClient.Client.RemoteEndPoint == request.EndPoint) == null)
+			{
+				connectionHandler = IocContainer.Resolve<IConnectionHandler>();
+				ActiveConnections.Add(connectionHandler.OpenConnection(request.EndPoint));
 			}
 
-			Console.WriteLine($"\n{System.DateTime.Now} - Execução Finalizada! Pressione qualquer tecla para sair...");
-			Console.ReadKey();
+			var serialNumberFrame = await connectionHandler.SendRequest<SerialNumber>(new SerialNumber());
+			var serialNumber = String.Join("", serialNumberFrame.GetAsciiCharacters());
+
+			var recordsStatusFrame = await connectionHandler.SendRequest<Status>(new Status());
+			var recordsStatus = recordsStatusFrame.GetValue();
+			Console.WriteLine($"{request.EndPoint.ToString()} Registros Disponíveis: {recordsStatus[1] - recordsStatus[0]} [{recordsStatus[0]},{recordsStatus[1]}]");
+
+			var indexRangeToScan = recordHandler.GetRecordsIndexToScan(request, recordsStatus);
+
+			var recordsContent = recordHandler.GetRecordsContent(connectionHandler, indexRangeToScan);
+
+			logWritter.SaveCSVFile(serialNumber, recordsContent);
 		}
 	}
 }
