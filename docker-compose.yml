@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  telemetry.app:
+    image: telemetryapp
+    build:
+      context: .
+      dockerfile: Telemetry.App/Dockerfile
