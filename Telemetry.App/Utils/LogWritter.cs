@@ -23,9 +23,9 @@ namespace Telemetry.App.Utils
 				throw new Exception("Numero Serial nulo ou não há registros para serem gravados em arquivo!");
 			}
 
-			var fileName = $"\\LOG_{ System.DateTime.Now.ToString()}.csv".Replace(':', '-')
-																			.Replace(' ', '_')
-																			.Replace('/', '-');
+			var fileName = $"\\LOG_{ System.DateTime.Now.ToString()}_{Guid.NewGuid().ToString("N")}.csv".Replace(':', '-')
+																										.Replace(' ', '_')
+																										.Replace('/', '-');
 
 			var projectPath = Directory.GetCurrentDirectory() + $"{fileName}";
 
