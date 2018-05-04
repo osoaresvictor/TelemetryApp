@@ -17,4 +17,5 @@ O arquivo de inicialização possui a seguinte sintaxe deve contar os campos **I
 `127.0.0.3 2200 37 400`
 
 De maneira geral:  **<Telemetry.App.exe> listaDePedidos.txt**
+
 *A aplicação possui suporte à Docker.
