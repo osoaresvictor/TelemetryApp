@@ -33,7 +33,7 @@ namespace Telemetry.App.Aplication
 
 			if (responseObject.Checksum != responseObject.VerifyChecksum())
 			{
-				Console.WriteLine($"{System.DateTime.Now} - Erro na resposta do servidor! Repetindo transmissão... ");
+				Console.WriteLine($"{this.TcpSocketClient.TcpClient.Client.RemoteEndPoint} - Erro na resposta do servidor! Repetindo transmissão... ");
 
 				var errorFrame = new Error().ToByteArray();
 				response = await this.TcpSocketClient.SendRequest(errorFrame);
