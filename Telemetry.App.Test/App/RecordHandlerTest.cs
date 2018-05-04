@@ -3,6 +3,7 @@ using NSubstitute;
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Telemetry.App.Aplication;
 using Telemetry.App.Application.Interfaces;
@@ -31,6 +32,28 @@ namespace Telemetry.App.Test.App
 			var avaliableIndex = new ushort[] { 300, 500 };
 
 			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, avaliableIndex);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(Exception))]
+		public void GetRecordsIndexToScan_StartupParametersIsNull()
+		{
+			var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10002);
+			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 0, LastIndex = 100 };
+			var avaliableIndex = new ushort[] { 300, 500 };
+
+			var range = RecordHandler.GetRecordsIndexToScan(null, avaliableIndex);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(NullReferenceException))]
+		public void GetRecordsIndexToScan_AvaliableIndexIsNull()
+		{
+			var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 10002);
+			var startupParameters = new StartupParameters { EndPoint = endpoint, FirstIndex = 0, LastIndex = 100 };
+			var avaliableIndex = new ushort[] { 300, 500 };
+
+			var range = RecordHandler.GetRecordsIndexToScan(startupParameters, null);
 		}
 
 		[TestMethod]
@@ -99,6 +122,7 @@ namespace Telemetry.App.Test.App
 			};
 
 			var connectionHandlerMock = Substitute.For<IConnectionHandler>();
+			connectionHandlerMock.TcpSocketClient.TcpClient.Returns(new TcpClient());
 			connectionHandlerMock.SendRequest<Energy>(Arg.Any<Energy>()).Returns(Task.FromResult(energyMockResponse));
 			connectionHandlerMock.SendRequest<Telemetry.Domain.Frame.DateTime>(Arg.Any<Telemetry.Domain.Frame.DateTime>()).Returns(Task.FromResult(dateTimeMockResponse));
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
@@ -127,6 +151,7 @@ namespace Telemetry.App.Test.App
 			};
 
 			var connectionHandlerMock = Substitute.For<IConnectionHandler>();
+			connectionHandlerMock.TcpSocketClient.TcpClient.Returns(new TcpClient());
 			connectionHandlerMock.SendRequest<Energy>(Arg.Any<Energy>()).Returns(Task.FromResult(energyMockResponse));
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
 
@@ -146,6 +171,7 @@ namespace Telemetry.App.Test.App
 			};
 
 			var connectionHandlerMock = Substitute.For<IConnectionHandler>();
+			connectionHandlerMock.TcpSocketClient.TcpClient.Returns(new TcpClient());
 			connectionHandlerMock.SendRequest<Index>(Arg.Any<Index>()).Returns(Task.FromResult(indexMockResponse));
 
 			var records = RecordHandler.GetRecordsContent(connectionHandlerMock, new int[] { 0, 1 });

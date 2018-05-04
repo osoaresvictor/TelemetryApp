@@ -35,9 +35,11 @@ namespace Telemetry.App.Test.App
 		[TestMethod]
 		public void SaveFileWithValidInputData()
 		{
-			var defaultLogFilePath = Directory.GetCurrentDirectory() + $"\\LOG_{ System.DateTime.Now.ToString()}.csv".Replace(':', '-')
-																					.Replace(' ', '_')
-																					.Replace('/', '-');
+
+			var filePath = Directory.GetCurrentDirectory();
+			var defaultLogFilePath = filePath + $"\\LOG_{ System.DateTime.Now.ToString()}_{Guid.NewGuid().ToString("N")}.csv".Replace(':', '-')
+																															 .Replace(' ', '_')
+																															 .Replace('/', '-');
 
 			var pathGeneratedFile = LogWritter.SaveCSVFile("ASUHDIFU023341", new List<RecordContent>() { null, null, null});
 
