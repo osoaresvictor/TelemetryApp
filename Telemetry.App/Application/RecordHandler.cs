@@ -15,6 +15,8 @@ namespace Telemetry.App.Aplication
 
 		public int[] GetRecordsIndexToScan(StartupParameters request, ushort[] recordsStatus)
 		{
+			if (request == null || recordsStatus.Length < 1) { throw new Exception("Invalid arguments for 'GetRecordsIndexToScan' method"); }
+
 			var avaliableRecordsRange = Enumerable.Range(recordsStatus[0], recordsStatus[1]);
 
 			var firstIndexRequestExists = avaliableRecordsRange.Contains(request.FirstIndex);
@@ -44,6 +46,8 @@ namespace Telemetry.App.Aplication
 
 		public IEnumerable<RecordContent> GetRecordsContent(IConnectionHandler connectionHandler, int[] indexRange)
 		{
+			if (connectionHandler.TcpSocketClient?.TcpClient == null) throw new ArgumentNullException(nameof(connectionHandler));
+
 			Console.WriteLine($"{connectionHandler.TcpSocketClient.TcpClient.Client.RemoteEndPoint} - " +
 							  $"Iniciando processamento, índices: {indexRange[0]}-{indexRange[1]} ");
 

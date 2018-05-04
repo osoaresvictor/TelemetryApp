@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Telemetry.App.Application.Interfaces;
 using Telemetry.App.IoC;
 using Telemetry.App.Model;
-using Telemetry.App.Repository.Interfaces;
 using Telemetry.App.Utils.Interfaces;
 using Telemetry.Domain.Frame;
 
@@ -16,18 +16,18 @@ namespace TelemetryApp
 	{
 		private static IContainer IocContainer;
 		private static StartupParameters[] RequestsList;
-		private static List<ITcpSocketClient> ActiveConnections;
+		private static List<Socket> ActiveConnections;
 
 		public static void Main(string[] args)
 		{
-			IocContainer = new ContainerFactory().Create();
-			var initializer = IocContainer.Resolve<IInitializer>();
-
-			ActiveConnections = new List<ITcpSocketClient>();
-			RequestsList = default(StartupParameters[]);
-
 			try
 			{
+				IocContainer = new ContainerFactory().Create();
+				var initializer = IocContainer.Resolve<IInitializer>();
+
+				ActiveConnections = new List<Socket>();
+				RequestsList = default(StartupParameters[]);
+
 				RequestsList = initializer.GetRequests(args).ToArray();
 
 				var requestTasks = new List<Task>();
@@ -40,7 +40,7 @@ namespace TelemetryApp
 			}
 			finally
 			{
-				ActiveConnections.ForEach(connection => connection.Disconnect());
+				ActiveConnections.ForEach(connection => connection.Dispose());
 				Console.WriteLine($"\n{System.DateTime.Now} - Execução Finalizada! Pressione qualquer tecla para sair...");
 				Console.ReadKey();
 			}
@@ -52,10 +52,10 @@ namespace TelemetryApp
 			var logWritter = IocContainer.Resolve<ILogWritter>();
 			var connectionHandler = default(IConnectionHandler);
 
-			if (ActiveConnections.FirstOrDefault(connection => connection.TcpClient.Client.RemoteEndPoint == request.EndPoint) == null)
+			if (ActiveConnections.FirstOrDefault(connection => connection.RemoteEndPoint == request.EndPoint) == null)
 			{
 				connectionHandler = IocContainer.Resolve<IConnectionHandler>();
-				ActiveConnections.Add(connectionHandler.OpenConnection(request.EndPoint));
+				ActiveConnections.Add(connectionHandler.OpenConnection(request.EndPoint).TcpClient.Client);
 			}
 
 			var serialNumberFrame = await connectionHandler.SendRequest<SerialNumber>(new SerialNumber());
