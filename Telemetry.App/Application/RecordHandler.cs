@@ -11,6 +11,8 @@ namespace Telemetry.App.Aplication
 {
 	public class RecordHandler : IRecordHandler
 	{
+		private List<RecordContent> RecordsContent;
+
 		public int[] GetRecordsIndexToScan(StartupParameters request, ushort[] recordsStatus)
 		{
 			var avaliableRecordsRange = Enumerable.Range(recordsStatus[0], recordsStatus[1]);
@@ -30,6 +32,10 @@ namespace Telemetry.App.Aplication
 			{
 				return new int[] { request.FirstIndex, recordsStatus[1] };
 			}
+			else if (request.FirstIndex < recordsStatus[0] && request.LastIndex > recordsStatus[1])
+			{
+				return new int[] { recordsStatus[0], recordsStatus[1] };
+			}
 			else
 			{
 				throw new Exception("O Intervalo informado está fora dos limites disponíveis para leitura!");
@@ -38,42 +44,38 @@ namespace Telemetry.App.Aplication
 
 		public IEnumerable<RecordContent> GetRecordsContent(IConnectionHandler connectionHandler, int[] indexRange)
 		{
-			Console.WriteLine($"{System.DateTime.Now} - Iniciando processamento, índices: {indexRange[0]}-{indexRange[1]} ");
+			Console.WriteLine($"{connectionHandler.TcpSocketClient.TcpClient.Client.RemoteEndPoint} - " +
+							  $"Iniciando processamento, índices: {indexRange[0]}-{indexRange[1]} ");
 
-			var recordsContent = new List<RecordContent>();
+			this.RecordsContent = new List<RecordContent>();
 
 			for (var index = indexRange[0]; index <= indexRange[1]; index++)
 			{
-				Console.WriteLine($"   > Processando registro {index} de {indexRange[1]}");
-				var content = GetRecordContent(connectionHandler, index).Result;
+				Console.WriteLine($"{connectionHandler.TcpSocketClient.TcpClient.Client.RemoteEndPoint} - Processando registro {index} de {indexRange[1]}");
+				GetRecordContent(connectionHandler, index).Wait();
+			};
 
-				if (content == null) continue;
-				else recordsContent.Add(content);
-			}
-
-			return recordsContent;
+			return this.RecordsContent;
 		}
 
-		private async Task<RecordContent> GetRecordContent(IConnectionHandler connectionHandler, int index)
+		private async Task GetRecordContent(IConnectionHandler connectionHandler, int index)
 		{
-			var recordIndex = connectionHandler.SendRequest<Index>(new Index(index)).Result;
+			var recordIndex = await connectionHandler.SendRequest<Index>(new Index(index));
 
 			if (recordIndex.IsValid())
 			{
 				var dateTime = await connectionHandler.SendRequest<Domain.Frame.DateTime>(new Domain.Frame.DateTime());
 				var energy = await connectionHandler.SendRequest<Energy>(new Energy());
 
-				return new RecordContent
-				{
-					Index = index,
-					DateTime = dateTime,
-					Energy = energy
-				};
+				this.RecordsContent.Add(
+					new RecordContent
+					{
+						Index = index,
+						DateTime = dateTime,
+						Energy = energy
+					});
 			}
-			else
-			{
-				return null;
-			}
+			else return;
 		}
 	}
 }
