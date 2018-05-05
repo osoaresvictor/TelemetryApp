@@ -66,6 +66,7 @@ namespace TelemetryApp
 			Console.WriteLine($"{request.EndPoint.ToString()} Registros Disponíveis: {recordsStatus[1] - recordsStatus[0]} [{recordsStatus[0]},{recordsStatus[1]}]");
 
 			var indexRangeToScan = recordHandler.GetRecordsIndexToScan(request, recordsStatus);
+			Console.WriteLine($"{request.EndPoint.ToString()} Registros Selecionados: {indexRangeToScan[1] - indexRangeToScan[0]} [{indexRangeToScan[0]},{indexRangeToScan[1]}]");
 
 			var recordsContent = recordHandler.GetRecordsContent(connectionHandler, indexRangeToScan);
 

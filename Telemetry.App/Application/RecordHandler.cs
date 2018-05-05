@@ -17,7 +17,7 @@ namespace Telemetry.App.Aplication
 		{
 			if (request == null || recordsStatus.Length < 1) { throw new Exception("Invalid arguments for 'GetRecordsIndexToScan' method"); }
 
-			var avaliableRecordsRange = Enumerable.Range(recordsStatus[0], recordsStatus[1]);
+			var avaliableRecordsRange = Enumerable.Range(recordsStatus[0], (recordsStatus[1] - recordsStatus[0] + 1));
 
 			var firstIndexRequestExists = avaliableRecordsRange.Contains(request.FirstIndex);
 			var lastIndexRequestExists = avaliableRecordsRange.Contains(request.LastIndex);
